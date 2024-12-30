@@ -10,7 +10,7 @@ const token = import.meta.env.VITE_TOKEN;
 
 const { Option } = Select;
 
-const EditProject = ({ project }) => {
+const EditProject = ({ project, onChangeAction, onRefresh }) => {
   // console.log(project);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
@@ -20,6 +20,7 @@ const EditProject = ({ project }) => {
 
   const showModal = () => {
     setIsModalOpen(true);
+    onChangeAction(false);
   };
 
   const handleOk = () => {
@@ -42,6 +43,7 @@ const EditProject = ({ project }) => {
             console.log("Project updated Successfully:", project);
             setIsModalOpen(false);
             setIsOkDisabled(true);
+            onRefresh(Math.random());
             form.resetFields();
           })
           .catch((error) => console.error("Failed to create project:", error));

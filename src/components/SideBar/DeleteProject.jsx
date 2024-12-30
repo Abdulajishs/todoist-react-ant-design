@@ -5,7 +5,7 @@ import { TodoistApi } from "@doist/todoist-api-typescript";
 
 const token = import.meta.env.VITE_TOKEN;
 
-const DeleteProject = ({ project, onChangeAction }) => {
+const DeleteProject = ({ project, onChangeAction, onRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
@@ -20,6 +20,7 @@ const DeleteProject = ({ project, onChangeAction }) => {
       .then((isSuccess) => {
         console.log("Deleted successfully", isSuccess);
         setIsModalOpen(false);
+        onRefresh(Math.random());
       })
       .catch((error) => console.log(error));
   };

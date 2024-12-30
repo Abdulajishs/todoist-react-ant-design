@@ -6,7 +6,7 @@ import ListProjects from "./ListProjects";
 
 const token = import.meta.env.VITE_TOKEN;
 
-const Favorites = () => {
+const Favorites = ({ refreshProjects, onRefresh }) => {
   const [toggle, setToggle] = useState(false);
   const [favorites, setFavorites] = useState([]);
   useEffect(() => {
@@ -19,7 +19,7 @@ const Favorites = () => {
         setFavorites(fav);
       })
       .catch((error) => console.log(error));
-  }, []);
+  }, [refreshProjects]);
 
   return (
     <div className="mb-5">
@@ -39,7 +39,11 @@ const Favorites = () => {
       <div>
         {toggle &&
           favorites.map((project) => (
-            <ListProjects key={project.id} project={project} />
+            <ListProjects
+              key={project.id}
+              project={project}
+              onRefresh={onRefresh}
+            />
           ))}
       </div>
     </div>

@@ -9,6 +9,7 @@ const { Sider } = Layout;
 
 const MenuBar = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [refreshProjects, setRefreshProjects] = useState(0);
 
   return (
     <>
@@ -33,9 +34,18 @@ const MenuBar = () => {
         collapsedWidth={0}
       >
         <div className="mt-16 px-3 flex flex-col">
-          <AddTasks />
-          <Favorites />
-          <MyProjects />
+          <AddTasks
+            refreshProjects={refreshProjects}
+            onRefresh={setRefreshProjects}
+          />
+          <Favorites
+            refreshProjects={refreshProjects}
+            onRefresh={setRefreshProjects}
+          />
+          <MyProjects
+            refreshProjects={refreshProjects}
+            onRefresh={setRefreshProjects}
+          />
         </div>
       </Sider>
     </>

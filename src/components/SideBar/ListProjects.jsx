@@ -7,7 +7,7 @@ import EditProject from "./EditProject";
 import AddToFavorite from "./AddToFavorite";
 import DeleteProject from "./DeleteProject";
 
-const ListProjects = ({ project }) => {
+const ListProjects = ({ project, onRefresh }) => {
   const [openMoreAction, setOpenMoreAction] = useState(false);
 
   let color = todoistColors.filter((ele) => ele.name === project.color);
@@ -46,39 +46,23 @@ const ListProjects = ({ project }) => {
           footer={null}
           closable={false}
         >
-          <EditProject project={project} />
-          {/* <Button
-            type="text"
-            block
-            className="flex flex-row justify-start gap-3  items-center "
-            // onClick={}
-          >
-            <EditOutlined /> <span>Edit</span>
-          </Button> */}
-          <Divider style={{ margin: "8px 0" }} />
-
-          <AddToFavorite project={project} />
-
-          {/* {isFavorite ? (
-            <Button
-              type="text"
-              block
-              className="flex flex-row justify-start gap-3  items-center "
-            >
-              <HeartFilled /> <span>Remove from favorites</span>
-            </Button>
-          ) : (
-            <Button
-              type="text"
-              block
-              className="flex flex-row justify-start gap-3  items-center "
-            >
-              <HeartOutlined /> <span>Add to favorites</span>
-            </Button>
-          )} */}
+          <EditProject
+            project={project}
+            onRefresh={onRefresh}
+            onChangeAction={setOpenMoreAction}
+          />
 
           <Divider style={{ margin: "8px 0" }} />
-          <DeleteProject project={project} onChangeAction={setOpenMoreAction} />
+
+          <AddToFavorite project={project} onRefresh={onRefresh} />
+
+          <Divider style={{ margin: "8px 0" }} />
+
+          <DeleteProject
+            project={project}
+            onChangeAction={setOpenMoreAction}
+            onRefresh={onRefresh}
+          />
         </Modal>
       </div>
     </>

@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { TodoistApi } from "@doist/todoist-api-typescript";
 const token = import.meta.env.VITE_TOKEN;
 
-const AddToFavorite = ({ project }) => {
+const AddToFavorite = ({ project, onRefresh }) => {
   console.log(project.isFavorite);
   const [isFavorite, setIsFavorite] = useState(project.isFavorite);
 
@@ -20,6 +20,7 @@ const AddToFavorite = ({ project }) => {
       .then((isSuccess) => {
         console.log("project update successfully", isSuccess);
         setIsFavorite(updatedFavoriteStatus);
+        onRefresh(Math.random());
       })
       .catch((error) => {
         console.log(error);

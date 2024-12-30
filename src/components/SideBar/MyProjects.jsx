@@ -7,7 +7,7 @@ import AddProject from "./AddProject";
 
 const token = import.meta.env.VITE_TOKEN;
 
-const MyProjects = () => {
+const MyProjects = ({ refreshProjects, onRefresh }) => {
   const [toggleProject, setToggleProject] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
 
@@ -20,13 +20,13 @@ const MyProjects = () => {
         setAllProjects(projects);
       })
       .catch((error) => console.log(error));
-  }, []);
+  }, [refreshProjects]);
   return (
     <>
       <div className="flex flex-row  justify-between items-center">
         <p className="text-center font-bold m-0">My Projects</p>
         <div className="flex justify-between gap-5 text-gray-500">
-          <AddProject />
+          <AddProject onRefresh={onRefresh} />
           <Tooltip title="Toggle list of My Projects">
             {toggleProject ? (
               <DownOutlined onClick={() => setToggleProject((prev) => !prev)} />
@@ -42,7 +42,11 @@ const MyProjects = () => {
       <div>
         {toggleProject &&
           allProjects.map((project) => (
-            <ListProjects key={project.id} project={project} />
+            <ListProjects
+              key={project.id}
+              project={project}
+              onRefresh={onRefresh}
+            />
           ))}
       </div>
     </>
