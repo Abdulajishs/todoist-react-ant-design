@@ -1,28 +1,40 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Modal } from "antd";
-import React, { useState } from "react";
+import { Button, Modal, message } from "antd";
+import React, { useContext, useState } from "react";
 import { TodoistApi } from "@doist/todoist-api-typescript";
+import { ProjectsContext } from "../../store/ProjectsContext";
+import { useNavigate } from "react-router-dom";
 
 const token = import.meta.env.VITE_TOKEN;
 
-const DeleteProject = ({ project, onChangeAction, onRefresh }) => {
+const DeleteProject = ({ project, onChangeAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { refreshProjects } = useContext(ProjectsContext);
+  const navigate = useNavigate();
 
   const showModal = () => {
     setIsModalOpen(true);
     onChangeAction(false);
   };
 
-  const handleOk = () => {
+  const handleDelete = async () => {
+    setIsDeleting(true);
     const api = new TodoistApi(token);
     api
       .deleteProject(project.id)
       .then((isSuccess) => {
         console.log("Deleted successfully", isSuccess);
+        message.success(`Project "${project.name}" deleted successfully.`);
         setIsModalOpen(false);
-        onRefresh(Math.random());
+        refreshProjects();
+        setIsDeleting(false);
+        navigate("/app/projects");
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        message.error("Failed to delete the project. Please try again.");
+      });
   };
 
   const handleCancel = () => {
@@ -34,7 +46,7 @@ const DeleteProject = ({ project, onChangeAction, onRefresh }) => {
       <Button
         type="text"
         block
-        className="flex flex-row justify-start gap-3  items-center text-red-600"
+        className="flex flex-row justify-start gap-3 items-center text-red-600"
         onClick={showModal}
       >
         <DeleteOutlined /> <span>Delete</span>
@@ -43,7 +55,8 @@ const DeleteProject = ({ project, onChangeAction, onRefresh }) => {
         title="Delete Project?"
         open={isModalOpen}
         onCancel={handleCancel}
-        onOk={handleOk}
+        onOk={handleDelete}
+        confirmLoading={isDeleting}
         okText="Delete"
         okButtonProps={{
           style: {

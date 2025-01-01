@@ -1,4 +1,3 @@
-import HomePage from "./pages/HomePage";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -6,12 +5,15 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import SingleProjectContent from "./components/Content/SingleProjectContent";
+import MyProjectsPage from "./pages/MyProjectsPage";
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<HomePage />} />
+      <Route path="/app/projects" element={<MainLayout />}>
+        <Route index element={<MyProjectsPage />} />
+        <Route path=":id" element={<SingleProjectContent />} />
       </Route>
     )
   );

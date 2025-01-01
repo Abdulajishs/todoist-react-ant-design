@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -14,15 +14,18 @@ import {
 import todoistColors from "../../utils/TodoistColors";
 
 import { TodoistApi } from "@doist/todoist-api-typescript";
+import runes from "runes2";
+import { ProjectsContext } from "../../store/ProjectsContext";
 
 const token = import.meta.env.VITE_TOKEN;
 
 const { Option } = Select;
 
-const AddProject = ({ onRefresh }) => {
+const AddProject = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
   const [favorite, setFavorite] = useState(false);
+  const { refreshProjects } = useContext(ProjectsContext);
 
   const [form] = Form.useForm();
 
@@ -51,7 +54,7 @@ const AddProject = ({ onRefresh }) => {
             setIsOkDisabled(true);
             form.resetFields();
             setFavorite(false);
-            onRefresh(Math.random());
+            refreshProjects();
           })
           .catch((error) => console.error("Failed to create project:", error));
 
@@ -116,7 +119,15 @@ const AddProject = ({ onRefresh }) => {
           }}
         >
           <Form.Item label="Name" name="name" className="font-bold">
-            <Input />
+            <Input
+              count={{
+                show: true,
+                max: 120,
+                strategy: (txt) => runes(txt).length,
+                exceedFormatter: (txt, { max }) =>
+                  runes(txt).slice(0, max).join(""),
+              }}
+            />
           </Form.Item>
 
           <Form.Item label="Color" className="font-bold" name="color">

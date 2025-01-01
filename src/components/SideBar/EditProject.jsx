@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Input, Select, Switch, Form } from "antd";
 
 import todoistColors from "../../utils/TodoistColors";
 
 import { TodoistApi } from "@doist/todoist-api-typescript";
+import runes from "runes2";
+import { ProjectsContext } from "../../store/ProjectsContext";
+import { useNavigate } from "react-router-dom";
 
 const token = import.meta.env.VITE_TOKEN;
 
 const { Option } = Select;
 
-const EditProject = ({ project, onChangeAction, onRefresh }) => {
+const EditProject = ({ project, onChangeAction }) => {
   // console.log(project);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
   const [favorite, setFavorite] = useState(project.isFavorite);
+  const navigate = useNavigate();
 
   const [form] = Form.useForm();
+  const { refreshProjects } = useContext(ProjectsContext);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -43,10 +48,11 @@ const EditProject = ({ project, onChangeAction, onRefresh }) => {
             console.log("Project updated Successfully:", project);
             setIsModalOpen(false);
             setIsOkDisabled(true);
-            onRefresh(Math.random());
+            refreshProjects();
+            navigate("/app/projects");
             form.resetFields();
           })
-          .catch((error) => console.error("Failed to create project:", error));
+          .catch((error) => console.error("Failed to update project:", error));
 
         console.log("Form Values:", projectData);
       })
@@ -110,10 +116,19 @@ const EditProject = ({ project, onChangeAction, onRefresh }) => {
             name: project.name,
             color: project.color,
             favorite: project.isFavorite,
+            workspace: "My Projects",
           }}
         >
           <Form.Item label="Name" name="name" className="font-bold">
-            <Input />
+            <Input
+              count={{
+                show: true,
+                max: 120,
+                strategy: (txt) => runes(txt).length,
+                exceedFormatter: (txt, { max }) =>
+                  runes(txt).slice(0, max).join(""),
+              }}
+            />
           </Form.Item>
 
           <Form.Item label="Color" className="font-bold" name="color">
@@ -136,12 +151,7 @@ const EditProject = ({ project, onChangeAction, onRefresh }) => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            label="Workspace"
-            className="font-bold"
-            name="workspace"
-            initialValue="My Projects"
-          >
+          <Form.Item label="Workspace" className="font-bold" name="workspace">
             <Select>
               <Option value="My Projects">My Projects</Option>
             </Select>

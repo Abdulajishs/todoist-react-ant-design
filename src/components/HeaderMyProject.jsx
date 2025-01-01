@@ -1,8 +1,8 @@
 import React from "react";
 import { Button, Flex } from "antd";
-import { SettingFilled, SettingOutlined } from "@ant-design/icons";
+import { SettingOutlined } from "@ant-design/icons";
 
-const HeaderTodo = () => {
+const HeaderMyProject = () => {
   return (
     <>
       <Flex justify="flex-end" style={{ padding: "16px" }}>
@@ -21,4 +21,4 @@ const HeaderTodo = () => {
   );
 };
 
-export default HeaderTodo;
+export default HeaderMyProject;
