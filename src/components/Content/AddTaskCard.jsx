@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { Button, Card, Divider, Flex, Form, Input, Select } from "antd";
 import { ProjectsContext } from "../../store/ProjectsContext";
 
-const AddTaskCard = ({ onSetOpenCard }) => {
+const AddTaskCard = ({ project, onSetOpenCard }) => {
   const [isAddDisabled, setIsAddDisabled] = useState(true);
   const { projects } = useContext(ProjectsContext);
 
@@ -10,7 +10,14 @@ const AddTaskCard = ({ onSetOpenCard }) => {
     value: project.name,
     label: (
       <p className="flex flex-row gap-5 m-0">
-        <span style={{ color: project.color }}>#</span>
+        {/* {console.log(project.color !== "charcoal" ? project.color : "black")} */}
+        <span
+          style={{
+            color: project.color,
+          }}
+        >
+          #
+        </span>
         <span>{`${project.name}`}</span>
       </p>
     ),
@@ -61,7 +68,7 @@ const AddTaskCard = ({ onSetOpenCard }) => {
         <Divider className="my-3" />
         <Flex justify="space-between">
           <Select
-            defaultValue="Inbox"
+            defaultValue={project.name}
             style={{
               width: 200,
             }}

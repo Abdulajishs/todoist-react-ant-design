@@ -2,37 +2,33 @@ import { HeartFilled, HeartOutlined } from "@ant-design/icons";
 import { Button, message } from "antd";
 import React, { useContext, useState } from "react";
 
-import { TodoistApi } from "@doist/todoist-api-typescript";
 import { ProjectsContext } from "../../store/ProjectsContext";
-const token = import.meta.env.VITE_TOKEN;
 
-const AddToFavorite = ({ project }) => {
+const AddToFavorite = ({ onChangeAction, project }) => {
   // console.log(project.isFavorite);
   const [isFavorite, setIsFavorite] = useState(project.isFavorite);
-  const { refreshProjects } = useContext(ProjectsContext);
+  const { updateProject } = useContext(ProjectsContext);
 
-  const handleChangeFavorite = () => {
+  const handleChangeFavorite = async () => {
     const updatedFavoriteStatus = !isFavorite;
 
-    const api = new TodoistApi(token);
-    api
-      .updateProject(project.id, {
-        is_favorite: updatedFavoriteStatus.toString(),
-      })
-      .then((isSuccess) => {
-        console.log("project update successfully", isSuccess);
-        setIsFavorite(updatedFavoriteStatus);
-        refreshProjects();
-        message.success(
-          `Project ${
-            updatedFavoriteStatus ? "added to" : "removed from"
-          } favorites successfully.`
-        );
-      })
-      .catch((error) => {
-        console.log(error);
-        message.error("Failed to update favorite status. Please try again.");
+    try {
+      console.log(project.id);
+      let data = await updateProject(project.id, {
+        isFavorite: updatedFavoriteStatus.toString(),
       });
+      console.log("project update successfully", data);
+      setIsFavorite(updatedFavoriteStatus);
+      onChangeAction(false);
+      message.success(
+        `Project ${
+          updatedFavoriteStatus ? "added to" : "removed from"
+        } favorites successfully.`
+      );
+    } catch (error) {
+      console.error("Failed to update favorite status:", error);
+      message.error("Failed to update favorite status. Please try again.");
+    }
   };
 
   return (

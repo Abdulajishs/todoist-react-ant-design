@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Button, Divider, Flex, Modal, Space, Tooltip, Typography } from "antd";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TasksContext } from "../../store/TasksContext";
 import { ProjectsContext } from "../../store/ProjectsContext";
 import { TodoistApi } from "@doist/todoist-api-typescript";
@@ -22,17 +22,16 @@ const SingleProjectContent = () => {
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const [editProjectName, setEditProjectName] = useState("");
 
-  const { refreshProjects } = useContext(ProjectsContext);
+  const { projects, refreshProjects } = useContext(ProjectsContext);
+  const { id } = useParams();
+  const project = projects.filter((project) => project.id === id)[0];
+  console.log(project);
   const { tasks } = useContext(TasksContext);
 
-  const location = useLocation();
-  const { project } = location.state || {};
   const navigate = useNavigate();
-  const { id } = useParams();
 
   useEffect(() => {
     if (project) {
-      // Reset editProjectName when a new project is loaded
       setEditProjectName(project.name);
     }
   }, [project]);
@@ -117,7 +116,9 @@ const SingleProjectContent = () => {
           )}
         </Space>
 
-        {openCard && <AddTaskCard onSetOpenCard={setOpenCard} />}
+        {openCard && (
+          <AddTaskCard project={project} onSetOpenCard={setOpenCard} />
+        )}
       </div>
 
       {/* Modal for More Actions for projects */}

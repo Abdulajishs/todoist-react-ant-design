@@ -13,11 +13,8 @@ import {
 
 import todoistColors from "../../utils/TodoistColors";
 
-import { TodoistApi } from "@doist/todoist-api-typescript";
 import runes from "runes2";
 import { ProjectsContext } from "../../store/ProjectsContext";
-
-const token = import.meta.env.VITE_TOKEN;
 
 const { Option } = Select;
 
@@ -25,7 +22,7 @@ const AddProject = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
   const [favorite, setFavorite] = useState(false);
-  const { refreshProjects } = useContext(ProjectsContext);
+  const { addProject } = useContext(ProjectsContext);
 
   const [form] = Form.useForm();
 
@@ -33,36 +30,29 @@ const AddProject = () => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const selectedColor = todoistColors.find(
-          (color) => color.value === values.color
-        );
-        const projectData = {
-          name: values.name,
-          color: selectedColor.name,
-          is_favorite: values.favorite,
-        };
-        const api = new TodoistApi(token);
-        api
-          .addProject(projectData)
-          .then((project) => {
-            console.log("Project Created Successfully:", project);
-            setIsModalOpen(false);
-            setIsOkDisabled(true);
-            form.resetFields();
-            setFavorite(false);
-            refreshProjects();
-          })
-          .catch((error) => console.error("Failed to create project:", error));
+  const handleOk = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
+      const selectedColor = todoistColors.find(
+        (color) => color.value === values.color
+      );
+      const projectData = {
+        name: values.name,
+        color: selectedColor?.name || "",
+        is_favorite: values.favorite,
+      };
 
-        console.log("Form Values:", projectData);
-      })
-      .catch((info) => {
-        console.error("Validation Failed:", info);
-      });
+      const newProject = await addProject(projectData);
+      console.log("Project added successfully:", newProject);
+
+      // Reset
+      setIsModalOpen(false);
+      form.resetFields();
+      setFavorite(false);
+    } catch (error) {
+      console.error("Validation Failed:", error);
+    }
   };
 
   const handleCancel = () => {
@@ -73,7 +63,7 @@ const AddProject = () => {
   };
 
   const handleFieldsChange = (changedFields, allFields) => {
-    console.log(allFields);
+    // console.log(allFields);
     const hasProjectName = allFields.some(
       (field) => field.name[0] === "name" && field.value
     );

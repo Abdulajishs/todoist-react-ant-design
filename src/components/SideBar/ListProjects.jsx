@@ -20,7 +20,7 @@ const ListProjects = ({ project }) => {
 
   const handleProjectClick = () => {
     // navigate(`/app/projects/${urlId}`);
-    navigate(`/app/projects/${project.id}`, { state: { project } });
+    navigate(`/app/projects/${project.id}`);
   };
   return (
     <>
@@ -66,7 +66,7 @@ const ListProjects = ({ project }) => {
 
           <Divider style={{ margin: "8px 0" }} />
 
-          <AddToFavorite project={project} />
+          <AddToFavorite project={project} onChangeAction={setOpenMoreAction} />
 
           <Divider style={{ margin: "8px 0" }} />
 

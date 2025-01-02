@@ -14,7 +14,7 @@ const TasksProvider = ({ children }) => {
       .getTasks()
       .then((tasks) => {
         setTasks(tasks);
-        console.log(tasks);
+        // console.log(tasks);
       })
       .catch((error) => console.log(error));
   }, []);
