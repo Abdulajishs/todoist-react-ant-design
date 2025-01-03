@@ -3,60 +3,57 @@ import { Button, Divider, Flex, Modal, Space, Tooltip, Typography } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { TasksContext } from "../../store/TasksContext";
 import { ProjectsContext } from "../../store/ProjectsContext";
-import { TodoistApi } from "@doist/todoist-api-typescript";
 import AddTaskCard from "./AddTaskCard";
 import ListTasks from "./ListTasks";
 import EditProject from "../SideBar/EditProject";
 import AddToFavorite from "../SideBar/AddToFavorite";
 import DeleteProject from "../SideBar/DeleteProject";
-import {
-  EllipsisOutlined,
-  PlusCircleFilled,
-  PlusOutlined,
-} from "@ant-design/icons";
-
-const token = import.meta.env.VITE_TOKEN;
+import { EllipsisOutlined, PlusCircleFilled } from "@ant-design/icons";
+import ListCloseTask from "./ListCloseTask";
 
 const SingleProjectContent = () => {
   const [openCard, setOpenCard] = useState(false);
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const [editProjectName, setEditProjectName] = useState("");
 
-  const { projects, refreshProjects } = useContext(ProjectsContext);
+  const { projects, updateProject } = useContext(ProjectsContext);
   const { id } = useParams();
   const project = projects.filter((project) => project.id === id)[0];
-  console.log(project);
-  const { tasks } = useContext(TasksContext);
+  // console.log(project);
+
+  const { tasks, closedTasks } = useContext(TasksContext);
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    // console.log("check check");
     if (project) {
       setEditProjectName(project.name);
     }
   }, [project]);
 
   useEffect(() => {
-    if (!project || editProjectName === project.name) return;
-
-    const api = new TodoistApi(token);
-    const timeout = setTimeout(() => {
-      api
-        .updateProject(project.id, { name: editProjectName })
-        .then((updatedProject) => {
-          console.log("Project updated successfully:", updatedProject);
-          refreshProjects();
-        })
-        .catch((error) => console.error("Failed to update project:", error));
+    if (editProjectName === project.name) return;
+    const timeout = setTimeout(async () => {
+      try {
+        let data = await updateProject(project.id, { name: editProjectName });
+        console.log("Project updated successfully:", data);
+      } catch (error) {
+        console.error("Failed to update project:", error);
+      }
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [editProjectName, project]);
+  }, [editProjectName]);
 
   const handleMyProjectClick = () => navigate("/app/projects");
+  console.log(id, tasks, closedTasks);
 
   const selectedProjectTasks = tasks.filter((task) => task.projectId === id);
-
+  const selectedProjectClosedTasks = closedTasks.filter(
+    (task) => task.projectId === id
+  );
+  console.log(selectedProjectClosedTasks);
   return (
     <>
       {/* Header */}
@@ -93,7 +90,7 @@ const SingleProjectContent = () => {
             {editProjectName}
           </Typography.Title>
 
-          {/* Show Tasks */}
+          {/* Show  All Tasks of selected project.*/}
           <div>
             {selectedProjectTasks.map((task) => (
               <ListTasks key={task.id} task={task} />
@@ -115,10 +112,24 @@ const SingleProjectContent = () => {
             </Button>
           )}
         </Space>
-
         {openCard && (
           <AddTaskCard project={project} onSetOpenCard={setOpenCard} />
         )}
+
+        {/* ClosedTask */}
+        <div className="w-1/2">
+          {selectedProjectClosedTasks.map((task) => (
+            <ListCloseTask key={task.id} task={task} />
+          ))}
+        </div>
+        {/* <div className="w-1/2">
+          {[1].map((task) => (
+            <ListCloseTask
+              key={1}
+              task={{ content: "sssssssssss", description: "sss" }}
+            />
+          ))}
+        </div> */}
       </div>
 
       {/* Modal for More Actions for projects */}

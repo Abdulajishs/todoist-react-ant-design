@@ -25,8 +25,8 @@ const ProjectsProvider = ({ children }) => {
       });
   };
 
-  const addProject = (newProjectData) => {
-    api
+  const addProject = async (newProjectData) => {
+    return api
       .addProject(newProjectData)
       .then((newProject) => {
         console.log(newProject);
@@ -39,11 +39,11 @@ const ProjectsProvider = ({ children }) => {
       });
   };
 
-  const updateProject = (projectId, updatedData) => {
-    api
+  const updateProject = async (projectId, updatedData) => {
+    return api
       .updateProject(projectId, updatedData)
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         setProjects((prev) =>
           prev.map((project) => {
             return project.id === projectId ? { ...data } : project;
@@ -59,8 +59,8 @@ const ProjectsProvider = ({ children }) => {
       });
   };
 
-  const deleteProject = (projectId) => {
-    api
+  const deleteProject = async (projectId) => {
+    return api
       .deleteProject(projectId)
       .then((data) => {
         setProjects((prev) =>
@@ -71,6 +71,7 @@ const ProjectsProvider = ({ children }) => {
       })
       .catch((error) => {
         console.error("Error deleting project:", error);
+        throw error;
       });
   };
 

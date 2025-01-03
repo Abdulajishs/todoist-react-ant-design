@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 const MyProjects = () => {
   const { projects } = useContext(ProjectsContext);
   const [toggleProject, setToggleProject] = useState(false);
-  console.log(projects);
+  // console.log(projects);
   const navigate = useNavigate();
 
   const handleMyProjectClick = () => {

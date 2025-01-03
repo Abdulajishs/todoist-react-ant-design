@@ -12,10 +12,10 @@ import {
 import { ProjectsContext } from "../../store/ProjectsContext";
 import { TasksContext } from "../../store/TasksContext";
 
-const AddTaskCard = ({ project, onSetOpenCard }) => {
+const EditTaskCard = ({ task, onSetTaskCard }) => {
   const [isAddDisabled, setIsAddDisabled] = useState(true);
   const { projects } = useContext(ProjectsContext);
-  const { addTask } = useContext(TasksContext);
+  const { updateTask } = useContext(TasksContext);
 
   const listProjectName = projects.map((project) => ({
     value: project.name,
@@ -35,6 +35,9 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
   }));
   // console.log(listProjectName);
 
+  const selectedProject = projects.find((p) => p.id === task.projectId);
+  console.log(selectedProject);
+
   const [form] = Form.useForm();
 
   const handleFormSubmit = async (values) => {
@@ -47,24 +50,27 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
         (p) => p.value === values.projectName
       );
 
-      const projectId = projectItem ? projectItem.projectId : project.id;
+      const projectId = projectItem
+        ? projectItem.projectId
+        : selectedProject.id;
 
       let taskData = {
         content: values.content,
         description: values.description || "",
-        project_id: projectId,
+        projectId: projectId,
       };
 
       console.log(projectItem, taskData);
 
-      let newTask = await addTask(taskData);
-      console.log("Task added successfully:", newTask);
-      message.success(`Task "${values.content}" created successfully.`);
+      let updatedTask = await updateTask(task.id, taskData);
+      console.log("Task edited successfully:", updatedTask);
+      message.success(`Task "${values.content}" updated successfully.`);
       form.resetFields();
+      onSetTaskCard(false);
       setIsAddDisabled(true);
     } catch (error) {
       console.error("Validation Failed:", error);
-      message.error("Failed to createTask. Please try again.");
+      message.error("Failed to updateTask. Please try again.");
     }
   };
 
@@ -76,15 +82,24 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
   const handleCancel = () => {
     form.resetFields();
     setIsAddDisabled(true);
-    onSetOpenCard(false);
+    onSetTaskCard(false);
   };
 
   const handleChange = (value) => {
     console.log(`selected ${value}`);
   };
   return (
-    <Card className="w-1/2">
-      <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+    <Card>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFormSubmit}
+        initialValues={{
+          content: task.content,
+          description: task.description,
+          project_id: task.project_id,
+        }}
+      >
         <Form.Item name="content" className="mb-0">
           <Input
             size="middle"
@@ -107,14 +122,14 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
           <Form.Item
             name="projectName"
             // initialValue={{
-            //   label: project.name,
-            //   projectId: project.id,
-            //   value: project.name,
+            //   label: selectedProject.name,
+            //   projectId: selectedProject.id,
+            //   value: selectedProject.name,
             // }}
             className="mb-0"
           >
             <Select
-              defaultValue={project.name}
+              defaultValue={selectedProject.name}
               style={{
                 width: 200,
               }}
@@ -139,7 +154,7 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
               } text-white`}
               disabled={isAddDisabled}
             >
-              Add Task
+              Save
             </Button>
           </div>
         </Flex>
@@ -148,4 +163,4 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
   );
 };
 
-export default AddTaskCard;
+export default EditTaskCard;
