@@ -1,15 +1,48 @@
 import { TodoistApi } from "@doist/todoist-api-typescript";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useReducer, useState } from "react";
 
 export const TasksContext = createContext();
 
 const token = import.meta.env.VITE_TOKEN;
 const api = new TodoistApi(token);
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "fetch":
+      return { ...state, tasks: action.payload };
+    case "add":
+      return { ...state, tasks: [...state.tasks, action.payload] };
+    case "update":
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id ? action.payload : task
+        ),
+      };
+    case "delete":
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload),
+      };
+    case "addClose":
+      console.log(state.closedTasks, action.payload);
+      return { ...state, closedTasks: [...state.closedTasks, action.payload] };
+    case "deleteClose":
+      return {
+        ...state,
+        closedTasks: state.closedTasks.filter(
+          (task) => task.id !== action.payload
+        ),
+      };
+    default:
+      return state;
+  }
+};
+
 const TasksProvider = ({ children }) => {
-  const [tasks, setTasks] = useState([]);
-  const [closedTasks, setClosedTasks] = useState([]);
-  // console.log(tasks);
+  const [state, dispatch] = useReducer(reducer, { tasks: [], closedTasks: [] });
+  const { tasks, closedTasks } = state;
+  // const [closedTasks, setClosedTasks] = useState([]);
 
   useEffect(() => {
     fetchTasks();
@@ -19,8 +52,7 @@ const TasksProvider = ({ children }) => {
     api
       .getTasks()
       .then((tasks) => {
-        setTasks(tasks);
-        // console.log(tasks);
+        dispatch({ type: "fetch", payload: tasks });
       })
       .catch((error) => console.log("Error fetching tasks:", error));
   };
@@ -29,8 +61,7 @@ const TasksProvider = ({ children }) => {
     return api
       .addTask(newTask)
       .then((data) => {
-        console.log(data);
-        setTasks((prev) => [...prev, data]);
+        dispatch({ type: "add", payload: data });
         return data;
       })
       .catch((error) => {
@@ -43,16 +74,11 @@ const TasksProvider = ({ children }) => {
     console.log(taskId, updatedData);
     return api
       .updateTask(taskId, updatedData)
-      .then((data) => {
-        console.log(data);
-        setTasks((prev) =>
-          prev.map((task) => {
-            return task.id === taskId ? data : task;
-            // return task.id === taskId ? { ...task, ...updatedData } : task;
-          })
-        );
+      .then((task) => {
+        console.log(task);
 
-        return data;
+        dispatch({ type: "update", payload: task });
+        return task;
       })
       .catch((error) => {
         console.log(error);
@@ -64,8 +90,7 @@ const TasksProvider = ({ children }) => {
     return api
       .deleteTask(taskId)
       .then((data) => {
-        setTasks((prev) => prev.filter((task) => task.id !== taskId));
-        console.log(data);
+        dispatch({ type: "delete", payload: taskId });
         return data;
       })
       .catch((error) => {
@@ -78,8 +103,10 @@ const TasksProvider = ({ children }) => {
     return api
       .closeTask(taskId)
       .then((data) => {
-        setTasks((prev) => prev.filter((task) => task.id !== taskId));
-        setClosedTasks(() => [...closedTasks, task]);
+        // setTasks((prev) => prev.filter((task) => task.id !== taskId));
+        dispatch({ type: "delete", payload: taskId });
+        // setClosedTasks(() => [...closedTasks, task]);
+        dispatch({ type: "addClose", payload: task });
         console.log("Is added to close Task", data);
         return data;
       })
@@ -87,7 +114,8 @@ const TasksProvider = ({ children }) => {
   };
 
   const deleteCloseTask = (taskId) => {
-    setClosedTasks((prev) => prev.filter((task) => task.id !== taskId));
+    // setClosedTasks((prev) => prev.filter((task) => task.id !== taskId));
+    dispatch({ type: "deleteClose", payload: taskId });
     return taskId;
   };
   return (

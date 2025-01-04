@@ -1,13 +1,36 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useReducer } from "react";
 import { TodoistApi } from "@doist/todoist-api-typescript";
 
 export const ProjectsContext = createContext();
 
 const token = import.meta.env.VITE_TOKEN;
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "fetch":
+      return { projects: action.payload };
+    case "add":
+      return { projects: [...state.projects, action.payload] };
+    case "update":
+      return {
+        projects: state.projects.map((project) =>
+          project.id === action.payload.id ? action.payload : project
+        ),
+      };
+    case "delete":
+      return {
+        projects: state.projects.filter(
+          (project) => project.id !== action.payload
+        ),
+      };
+    default:
+      return state;
+  }
+};
+
 const ProjectsProvider = ({ children }) => {
-  const [projects, setProjects] = useState([]);
-  const [refresh, setRefresh] = useState(0);
+  const [state, dispatch] = useReducer(reducer, { projects: [] });
+  const { projects } = state;
   const api = new TodoistApi(token);
 
   useEffect(() => {
@@ -18,7 +41,7 @@ const ProjectsProvider = ({ children }) => {
     api
       .getProjects()
       .then((projects) => {
-        setProjects(projects);
+        dispatch({ type: "fetch", payload: projects });
       })
       .catch((error) => {
         console.error("Error fetching projects:", error);
@@ -30,7 +53,7 @@ const ProjectsProvider = ({ children }) => {
       .addProject(newProjectData)
       .then((newProject) => {
         console.log(newProject);
-        setProjects((prev) => [...prev, newProject]);
+        dispatch({ type: "add", payload: newProject });
         return newProject;
       })
       .catch((error) => {
@@ -43,12 +66,7 @@ const ProjectsProvider = ({ children }) => {
     return api
       .updateProject(projectId, updatedData)
       .then((data) => {
-        // console.log(data);
-        setProjects((prev) =>
-          prev.map((project) => {
-            return project.id === projectId ? { ...data } : project;
-          })
-        );
+        dispatch({ type: "update", payload: data });
 
         console.log(data);
         return data;
@@ -63,9 +81,7 @@ const ProjectsProvider = ({ children }) => {
     return api
       .deleteProject(projectId)
       .then((data) => {
-        setProjects((prev) =>
-          prev.filter((project) => project.id !== projectId)
-        );
+        dispatch({ type: "delete", payload: projectId });
         console.log(data);
         return data;
       })
@@ -75,8 +91,6 @@ const ProjectsProvider = ({ children }) => {
       });
   };
 
-  const refreshProjects = () => setRefresh((prev) => prev + 1);
-
   return (
     <ProjectsContext.Provider
       value={{
@@ -84,7 +98,6 @@ const ProjectsProvider = ({ children }) => {
         addProject,
         updateProject,
         deleteProject,
-        refreshProjects,
       }}
     >
       {children}

@@ -49,6 +49,7 @@ const SingleProjectContent = () => {
   const handleMyProjectClick = () => navigate("/app/projects");
   console.log(id, tasks, closedTasks);
 
+  console.log(closedTasks);
   const selectedProjectTasks = tasks.filter((task) => task.projectId === id);
   const selectedProjectClosedTasks = closedTasks.filter(
     (task) => task.projectId === id
