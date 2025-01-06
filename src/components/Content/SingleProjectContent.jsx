@@ -57,7 +57,7 @@ const SingleProjectContent = () => {
   return (
     <>
       {/* Header */}
-      <Flex justify="space-between" style={{ padding: "16px" }}>
+      <Flex justify="space-between" className="px-8 py-2 ">
         <Button
           type="text"
           className="font-semibold text-gray-500"
