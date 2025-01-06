@@ -5,19 +5,22 @@ export const ProjectsContext = createContext();
 
 const token = import.meta.env.VITE_TOKEN;
 
+// const FETCH = "FETCH";
+import { FETCH, ADD, UPDATE, DELETE } from "./ApiCall";
+
 const reducer = (state, action) => {
   switch (action.type) {
-    case "fetch":
+    case FETCH:
       return { projects: action.payload };
-    case "add":
+    case ADD:
       return { projects: [...state.projects, action.payload] };
-    case "update":
+    case UPDATE:
       return {
         projects: state.projects.map((project) =>
           project.id === action.payload.id ? action.payload : project
         ),
       };
-    case "delete":
+    case DELETE:
       return {
         projects: state.projects.filter(
           (project) => project.id !== action.payload
@@ -41,7 +44,7 @@ const ProjectsProvider = ({ children }) => {
     api
       .getProjects()
       .then((projects) => {
-        dispatch({ type: "fetch", payload: projects });
+        dispatch({ type: FETCH, payload: projects });
       })
       .catch((error) => {
         console.error("Error fetching projects:", error);
@@ -53,7 +56,7 @@ const ProjectsProvider = ({ children }) => {
       .addProject(newProjectData)
       .then((newProject) => {
         console.log(newProject);
-        dispatch({ type: "add", payload: newProject });
+        dispatch({ type: ADD, payload: newProject });
         return newProject;
       })
       .catch((error) => {
@@ -66,7 +69,7 @@ const ProjectsProvider = ({ children }) => {
     return api
       .updateProject(projectId, updatedData)
       .then((data) => {
-        dispatch({ type: "update", payload: data });
+        dispatch({ type: UPDATE, payload: data });
 
         console.log(data);
         return data;
@@ -81,7 +84,7 @@ const ProjectsProvider = ({ children }) => {
     return api
       .deleteProject(projectId)
       .then((data) => {
-        dispatch({ type: "delete", payload: projectId });
+        dispatch({ type: DELETE, payload: projectId });
         console.log(data);
         return data;
       })

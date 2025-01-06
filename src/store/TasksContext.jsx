@@ -2,24 +2,25 @@ import { TodoistApi } from "@doist/todoist-api-typescript";
 import React, { createContext, useEffect, useReducer, useState } from "react";
 
 export const TasksContext = createContext();
+import { FETCH, ADD, UPDATE, DELETE, ADD_CLOSE, DELETE_CLOSE } from "./ApiCall";
 
 const token = import.meta.env.VITE_TOKEN;
 const api = new TodoistApi(token);
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "fetch":
+    case FETCH:
       return { ...state, tasks: action.payload };
-    case "add":
+    case ADD:
       return { ...state, tasks: [...state.tasks, action.payload] };
-    case "update":
+    case UPDATE:
       return {
         ...state,
         tasks: state.tasks.map((task) =>
           task.id === action.payload.id ? action.payload : task
         ),
       };
-    case "delete":
+    case DELETE:
       return {
         ...state,
         tasks: state.tasks.filter((task) => task.id !== action.payload),
@@ -52,7 +53,7 @@ const TasksProvider = ({ children }) => {
     api
       .getTasks()
       .then((tasks) => {
-        dispatch({ type: "fetch", payload: tasks });
+        dispatch({ type: FETCH, payload: tasks });
       })
       .catch((error) => console.log("Error fetching tasks:", error));
   };
@@ -61,7 +62,7 @@ const TasksProvider = ({ children }) => {
     return api
       .addTask(newTask)
       .then((data) => {
-        dispatch({ type: "add", payload: data });
+        dispatch({ type: ADD, payload: data });
         return data;
       })
       .catch((error) => {
@@ -77,7 +78,7 @@ const TasksProvider = ({ children }) => {
       .then((task) => {
         console.log(task);
 
-        dispatch({ type: "update", payload: task });
+        dispatch({ type: UPDATE, payload: task });
         return task;
       })
       .catch((error) => {
@@ -90,7 +91,7 @@ const TasksProvider = ({ children }) => {
     return api
       .deleteTask(taskId)
       .then((data) => {
-        dispatch({ type: "delete", payload: taskId });
+        dispatch({ type: DELETE, payload: taskId });
         return data;
       })
       .catch((error) => {
@@ -104,9 +105,9 @@ const TasksProvider = ({ children }) => {
       .closeTask(taskId)
       .then((data) => {
         // setTasks((prev) => prev.filter((task) => task.id !== taskId));
-        dispatch({ type: "delete", payload: taskId });
+        dispatch({ type: DELETE, payload: taskId });
         // setClosedTasks(() => [...closedTasks, task]);
-        dispatch({ type: "addClose", payload: task });
+        dispatch({ type: ADD_CLOSE, payload: task });
         console.log("Is added to close Task", data);
         return data;
       })
@@ -115,7 +116,7 @@ const TasksProvider = ({ children }) => {
 
   const deleteCloseTask = (taskId) => {
     // setClosedTasks((prev) => prev.filter((task) => task.id !== taskId));
-    dispatch({ type: "deleteClose", payload: taskId });
+    dispatch({ type: DELETE_CLOSE, payload: taskId });
     return taskId;
   };
   return (
