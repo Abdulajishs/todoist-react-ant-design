@@ -1,12 +1,13 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Modal, message } from "antd";
-import React, { useContext, useState } from "react";
-import { TasksContext } from "../../store/TasksContext";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { deleteCloseTask } from "../../store/taskSlice";
 
 const DeleteCloseTask = ({ task, onChangeAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { deleteCloseTask } = useContext(TasksContext);
+  const dispatch = useDispatch();
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -16,7 +17,7 @@ const DeleteCloseTask = ({ task, onChangeAction }) => {
   const handleDelete = () => {
     setIsDeleting(true);
     try {
-      let data = deleteCloseTask(task.id);
+      let data = dispatch(deleteCloseTask(task.id));
       if (!data) {
         throw error;
       }

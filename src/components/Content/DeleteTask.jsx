@@ -1,12 +1,13 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Modal, message } from "antd";
-import React, { useContext, useState } from "react";
-import { TasksContext } from "../../store/TasksContext";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { deleteExistingTask } from "../../store/tasks-action";
 
 const DeleteTask = ({ task, onChangeAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { deleteTask } = useContext(TasksContext);
+  const dispatch = useDispatch();
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -15,18 +16,16 @@ const DeleteTask = ({ task, onChangeAction }) => {
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    try {
-      let data = await deleteTask(task.id);
-      console.log("Deleted successfully", data);
-
+    let data = await dispatch(deleteExistingTask(task.id));
+    if (data.success) {
+      console.log("Deleted successfully", data.data);
       message.success(`Task "${task.content}" deleted successfully.`);
       setIsModalOpen(false);
-    } catch (error) {
+    } else {
       console.error("Failed to delete the Task:", error);
       message.error("Failed to delete the Task. Please try again.");
-    } finally {
-      setIsDeleting(false);
     }
+    setIsDeleting(false);
   };
 
   const handleCancel = () => {

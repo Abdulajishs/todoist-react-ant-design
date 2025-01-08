@@ -1,13 +1,15 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Modal, message } from "antd";
-import React, { useContext, useState } from "react";
-import { ProjectsContext } from "../../store/ProjectsContext";
+import React, {  useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { deleteExistingProject } from "../../store/projects-action";
 
 const DeleteProject = ({ project, onChangeAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { deleteProject } = useContext(ProjectsContext);
+  
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const showModal = () => {
@@ -17,19 +19,16 @@ const DeleteProject = ({ project, onChangeAction }) => {
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    try {
-      let data = await deleteProject(project.id);
-      console.log("Deleted successfully", data);
-
+    const result = await dispatch(deleteExistingProject(project.id));
+    if (result.success) {
       message.success(`Project "${project.name}" deleted successfully.`);
       setIsModalOpen(false);
       navigate("/app/projects");
-    } catch (error) {
-      console.error("Failed to delete the project:", error);
+    } else {
+      console.error("Failed to delete the project:", result.error);
       message.error("Failed to delete the project. Please try again.");
-    } finally {
-      setIsDeleting(false);
     }
+    setIsDeleting(false);
   };
 
   const handleCancel = () => {

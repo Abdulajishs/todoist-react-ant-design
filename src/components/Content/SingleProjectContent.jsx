@@ -1,8 +1,15 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Button, Divider, Flex, Modal, Space, Tooltip, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Divider,
+  Flex,
+  message,
+  Modal,
+  Space,
+  Tooltip,
+  Typography,
+} from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import { TasksContext } from "../../store/TasksContext";
-import { ProjectsContext } from "../../store/ProjectsContext";
 import AddTaskCard from "./AddTaskCard";
 import ListTasks from "./ListTasks";
 import EditProject from "../SideBar/EditProject";
@@ -10,18 +17,22 @@ import AddToFavorite from "../SideBar/AddToFavorite";
 import DeleteProject from "../SideBar/DeleteProject";
 import { EllipsisOutlined, PlusCircleFilled } from "@ant-design/icons";
 import ListCloseTask from "./ListCloseTask";
+import { useDispatch, useSelector } from "react-redux";
+import { updateExistingProject } from "../../store/projects-action";
 
 const SingleProjectContent = () => {
   const [openCard, setOpenCard] = useState(false);
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const [editProjectName, setEditProjectName] = useState("");
+  const { projects } = useSelector((state) => state.projects);
+  const dispatch = useDispatch();
 
-  const { projects, updateProject } = useContext(ProjectsContext);
   const { id } = useParams();
   const project = projects.filter((project) => project.id === id)[0];
   // console.log(project);
 
-  const { tasks, closedTasks } = useContext(TasksContext);
+  const tasks = useSelector((state) => state.tasks.tasks);
+  const closedTasks = useSelector((state) => state.tasks.closedTasks);
 
   const navigate = useNavigate();
 
@@ -35,11 +46,15 @@ const SingleProjectContent = () => {
   useEffect(() => {
     if (editProjectName === project.name) return;
     const timeout = setTimeout(async () => {
-      try {
-        let data = await updateProject(project.id, { name: editProjectName });
-        console.log("Project updated successfully:", data);
-      } catch (error) {
-        console.error("Failed to update project:", error);
+      const result = await dispatch(
+        updateExistingProject(project.id, { name: editProjectName })
+      );
+      if (result.success) {
+        message.success(`Project "${project.name}" created successfully.`);
+        console.log("Project updated successfully:", result.data);
+      } else {
+        console.error("Failed to update the project:", result.error);
+        message.error("Failed to update the project. Please try again.");
       }
     }, 500);
 
@@ -123,14 +138,6 @@ const SingleProjectContent = () => {
             <ListCloseTask key={task.id} task={task} />
           ))}
         </div>
-        {/* <div className="w-1/2">
-          {[1].map((task) => (
-            <ListCloseTask
-              key={1}
-              task={{ content: "sssssssssss", description: "sss" }}
-            />
-          ))}
-        </div> */}
       </div>
 
       {/* Modal for More Actions for projects */}

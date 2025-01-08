@@ -3,12 +3,12 @@ import { SearchOutlined } from "@ant-design/icons";
 import { Divider, Input, Space } from "antd";
 import ListProjects from "../SideBar/ListProjects";
 
-import { ProjectsContext } from "../../store/ProjectsContext";
 import HeaderMyProject from "../HeaderMyProject";
+import { useSelector } from "react-redux";
 
 const MyProjectsContent = () => {
   const [searchProject, setSearchProject] = useState("");
-  const { projects } = useContext(ProjectsContext);
+  const { projects } = useSelector((state) => state.projects);
 
   const filteredProjects = useMemo(() => {
     return projects.filter((project) =>

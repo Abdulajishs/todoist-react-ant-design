@@ -1,23 +1,24 @@
 import { HeartFilled, HeartOutlined } from "@ant-design/icons";
 import { Button, message } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 
-import { ProjectsContext } from "../../store/ProjectsContext";
+import { useDispatch } from "react-redux";
+import { updateExistingProject } from "../../store/projects-action";
 
 const AddToFavorite = ({ onChangeAction, project }) => {
   // console.log(project.isFavorite);
   const [isFavorite, setIsFavorite] = useState(project.isFavorite);
-  const { updateProject } = useContext(ProjectsContext);
+  const dispatch = useDispatch();
 
   const handleChangeFavorite = async () => {
     const updatedFavoriteStatus = !isFavorite;
-
-    try {
-      console.log(project.id);
-      let data = await updateProject(project.id, {
+    const result = await dispatch(
+      updateExistingProject(project.id, {
         isFavorite: updatedFavoriteStatus.toString(),
-      });
-      console.log("project update successfully", data);
+      })
+    );
+    if (result.success) {
+      console.log("project update successfully", result.data);
       setIsFavorite(updatedFavoriteStatus);
       onChangeAction(false);
       message.success(
@@ -25,9 +26,9 @@ const AddToFavorite = ({ onChangeAction, project }) => {
           updatedFavoriteStatus ? "added to" : "removed from"
         } favorites successfully.`
       );
-    } catch (error) {
-      console.error("Failed to update favorite status:", error);
-      message.error("Failed to update favorite status. Please try again.");
+    } else {
+      console.error("Failed to update the project:", result.error);
+      message.error("Failed to update the project. Please try again.");
     }
   };
 

@@ -1,14 +1,14 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { DownOutlined, RightOutlined } from "@ant-design/icons";
 import { Button, Tooltip } from "antd";
 import ListProjects from "./ListProjects";
 import AddProject from "./AddProject";
-import { ProjectsContext } from "../../store/ProjectsContext";
 
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const MyProjects = () => {
-  const { projects } = useContext(ProjectsContext);
+  const { projects } = useSelector((state) => state.projects);
   const [toggleProject, setToggleProject] = useState(false);
   // console.log(projects);
   const navigate = useNavigate();

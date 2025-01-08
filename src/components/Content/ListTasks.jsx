@@ -1,16 +1,17 @@
 import { EditOutlined, EllipsisOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Divider, Flex, message, Modal, Tooltip } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import EditTask from "./EditTask";
 import MoveTask from "./MoveTask";
 import DeleteTask from "./DeleteTask";
 import EditTaskCard from "./EditTaskCard";
-import { TasksContext } from "../../store/TasksContext";
+import { useDispatch } from "react-redux";
+import { addClosedTask } from "../../store/tasks-action";
 
 const ListTasks = ({ task }) => {
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const [openEditTask, setOpenEditTask] = useState(false);
-  const { closeTask } = useContext(TasksContext);
+  const dispatch = useDispatch();
 
   // console.log(task);
 
@@ -22,10 +23,15 @@ const ListTasks = ({ task }) => {
     console.log(`checked = ${e.target.checked}`);
     try {
       if (e.target.checked) {
-        let data = await closeTask(task.id, task);
-        console.log("Updated the Task status successfully", data);
-
-        message.success(`Task "${task.content}" updated status successfully.`);
+        let data = await dispatch(addClosedTask(task.id, task));
+        if (data.success) {
+          console.log("Updated the Task status successfully", data);
+          message.success(
+            `Task "${task.content}" updated status successfully.`
+          );
+        } else {
+          message.error("Failed to update the Task status. Please try again.");
+        }
       }
     } catch (error) {
       console.error("Failed to update the Task status:", error);

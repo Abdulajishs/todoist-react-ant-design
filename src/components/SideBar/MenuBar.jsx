@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Flex, Layout, Tooltip } from "antd";
-import { DownOutlined, LayoutOutlined, PlusOutlined } from "@ant-design/icons";
+import { Layout, Tooltip } from "antd";
+import { LayoutOutlined } from "@ant-design/icons";
 import MyProjects from "./MyProjects";
 import Favorites from "./Favorites";
 import AddTasks from "./AddTasks";

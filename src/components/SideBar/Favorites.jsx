@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { DownOutlined, RightOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
 import ListProjects from "./ListProjects";
-import { ProjectsContext } from "../../store/ProjectsContext";
+import { useSelector } from "react-redux";
 
 const Favorites = () => {
-  const { projects } = useContext(ProjectsContext);
+  const { projects } = useSelector((state) => state.projects);
   const [toggle, setToggle] = useState(false);
 
   const favorites = projects.filter((project) => project.isFavorite);

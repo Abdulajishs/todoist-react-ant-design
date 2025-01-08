@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -9,12 +9,14 @@ import {
   Select,
   Switch,
   Form,
+  message,
 } from "antd";
 
 import todoistColors from "../../utils/TodoistColors";
 
 import runes from "runes2";
-import { ProjectsContext } from "../../store/ProjectsContext";
+import { useDispatch } from "react-redux";
+import { addNewProject } from "../../store/projects-action";
 
 const { Option } = Select;
 
@@ -22,7 +24,7 @@ const AddProject = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
   const [favorite, setFavorite] = useState(false);
-  const { addProject } = useContext(ProjectsContext);
+  const dispatch = useDispatch();
 
   const [form] = Form.useForm();
 
@@ -43,8 +45,14 @@ const AddProject = () => {
         is_favorite: values.favorite,
       };
 
-      const newProject = await addProject(projectData);
-      console.log("Project added successfully:", newProject);
+      const result = await dispatch(addNewProject(projectData));
+      if (result.success) {
+        message.success(`Project "${values.name}" created successfully.`);
+        console.log("Project created successfully:", result.data);
+      } else {
+        console.error("Failed to update the project:", result.error);
+        message.error("Failed to update the project. Please try again.");
+      }
 
       // Reset
       setIsModalOpen(false);

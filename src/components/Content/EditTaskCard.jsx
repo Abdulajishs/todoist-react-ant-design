@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -9,13 +9,13 @@ import {
   message,
   Select,
 } from "antd";
-import { ProjectsContext } from "../../store/ProjectsContext";
-import { TasksContext } from "../../store/TasksContext";
+import { useDispatch, useSelector } from "react-redux";
+import { updateExistingTask } from "../../store/tasks-action";
 
 const EditTaskCard = ({ task, onSetTaskCard }) => {
   const [isAddDisabled, setIsAddDisabled] = useState(true);
-  const { projects } = useContext(ProjectsContext);
-  const { updateTask } = useContext(TasksContext);
+  const { projects } = useSelector((state) => state.projects);
+  const dispatch = useDispatch();
 
   const listProjectName = projects.map((project) => ({
     value: project.name,
@@ -62,9 +62,13 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
 
       console.log(projectItem, taskData);
 
-      let updatedTask = await updateTask(task.id, taskData);
-      console.log("Task edited successfully:", updatedTask);
-      message.success(`Task "${values.content}" updated successfully.`);
+      let updatedTask = await dispatch(updateExistingTask(task.id, taskData));
+      if (updatedTask.success) {
+        console.log("Task edited successfully:", updatedTask);
+        message.success(`Task "${values.content}" updated successfully.`);
+      } else {
+        message.error("Failed to updateTask. Please try again.");
+      }
       form.resetFields();
       onSetTaskCard(false);
       setIsAddDisabled(true);

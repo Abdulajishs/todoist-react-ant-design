@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -14,8 +14,9 @@ import {
 import todoistColors from "../../utils/TodoistColors";
 
 import runes from "runes2";
-import { ProjectsContext } from "../../store/ProjectsContext";
 import { useNavigate } from "react-router-dom";
+import { updateExistingProject } from "../../store/projects-action";
+import { useDispatch } from "react-redux";
 
 const { Option } = Select;
 
@@ -27,7 +28,7 @@ const EditProject = ({ project, onChangeAction }) => {
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
-  const { updateProject } = useContext(ProjectsContext);
+  const dispatch = useDispatch();
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -48,12 +49,18 @@ const EditProject = ({ project, onChangeAction }) => {
         isFavorite: values.favorite,
       };
 
-      let data = await updateProject(project.id, updatedData);
-
-      console.log(data);
-      message.success(`Project "${values.name}" updated successfully.`);
-      setIsModalOpen(false);
-      navigate("/app/projects");
+      const result = await dispatch(
+        updateExistingProject(project.id, updatedData)
+      );
+      if (result.success) {
+        message.success(`Project "${values.name}" updated successfully.`);
+        setIsModalOpen(false);
+        navigate("/app/projects");
+        console.log("Project updated successfully:", result.data);
+      } else {
+        console.error("Failed to update the project:", result.error);
+        message.error("Failed to update the project. Please try again.");
+      }
     } catch (error) {
       console.error("Failed to update project:", error);
       message.error("Failed to update project. Please try again.");
@@ -67,7 +74,7 @@ const EditProject = ({ project, onChangeAction }) => {
   };
 
   const handleFieldsChange = (changedFields, allFields) => {
-    console.log(allFields);
+    // console.log(allFields);
     const hasProjectName = allFields.some(
       (field) => field.name[0] === "name" && field.value
     );
