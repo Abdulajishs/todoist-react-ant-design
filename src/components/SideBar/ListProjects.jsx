@@ -9,6 +9,7 @@ import DeleteProject from "./DeleteProject";
 import { useNavigate } from "react-router-dom";
 
 const ListProjects = ({ project }) => {
+  // console.log(project);
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const navigate = useNavigate();
 
@@ -32,7 +33,8 @@ const ListProjects = ({ project }) => {
           onClick={handleProjectClick}
         >
           <div>
-            <span style={{ color: color[0].value }} className="pr-5">
+            {/* <span style={{ color: color[0].value }} className="pr-5"> */}
+            <span style={{ color: project.color }} className="pr-5">
               #
             </span>
             <span>{project.name}</span>
@@ -62,11 +64,20 @@ const ListProjects = ({ project }) => {
           closable={false}
           mask={null}
         >
-          <EditProject project={project} onChangeAction={setOpenMoreAction} />
+          <EditProject
+            projectId={project.id}
+            // project={project}
+            openMoreAction={openMoreAction}
+            onChangeAction={setOpenMoreAction}
+          />
 
           <Divider style={{ margin: "8px 0" }} />
-
-          <AddToFavorite project={project} onChangeAction={setOpenMoreAction} />
+          <AddToFavorite
+            projectId={project.id}
+            // project={project}
+            openMoreAction={openMoreAction}
+            onChangeAction={setOpenMoreAction}
+          />
 
           <Divider style={{ margin: "8px 0" }} />
 

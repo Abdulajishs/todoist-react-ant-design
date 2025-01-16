@@ -2,7 +2,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Modal, message } from "antd";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { deleteCloseTask } from "../../store/taskSlice";
+import { deleteExistingTask } from "../../store/tasks-action";
 
 const DeleteCloseTask = ({ task, onChangeAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,10 +14,10 @@ const DeleteCloseTask = ({ task, onChangeAction }) => {
     onChangeAction(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      let data = dispatch(deleteCloseTask(task.id));
+      let data = await dispatch(deleteExistingTask(task.id));
       if (!data) {
         throw error;
       }

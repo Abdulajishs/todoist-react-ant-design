@@ -1,4 +1,4 @@
-import { EllipsisOutlined } from "@ant-design/icons";
+import { CalendarOutlined, EllipsisOutlined } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -15,7 +15,7 @@ import DeleteCloseTask from "./DeleteCloseTask";
 const ListCloseTask = ({ task }) => {
   const [openMoreAction, setOpenMoreAction] = useState(false);
 
-  console.log(task);
+  // console.log(task);
   return (
     <div>
       <div className=" group text-gray-400 mt-3">
@@ -28,6 +28,10 @@ const ListCloseTask = ({ task }) => {
               </Text>
             </Flex>
             <p className="pl-7">{task.description}</p>
+            <p className="pl-7">
+              <CalendarOutlined className="pr-2" />
+              {task.due_date.slice(0, 10)}
+            </p>
           </Flex>
           <Flex
             align="center"

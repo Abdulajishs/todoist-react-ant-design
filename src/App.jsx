@@ -10,13 +10,11 @@ import MyProjectsPage from "./pages/MyProjectsPage";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchProjects } from "./store/projects-action";
-import { fetchTasks } from "./store/tasks-action";
 
 function App() {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchProjects());
-    dispatch(fetchTasks());
   }, [dispatch]);
   const router = createBrowserRouter(
     createRoutesFromElements(

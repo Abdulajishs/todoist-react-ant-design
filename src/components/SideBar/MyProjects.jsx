@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 const MyProjects = () => {
   const { projects } = useSelector((state) => state.projects);
   const [toggleProject, setToggleProject] = useState(false);
-  // console.log(projects);
+  console.log(projects);
   const navigate = useNavigate();
 
   const handleMyProjectClick = () => {

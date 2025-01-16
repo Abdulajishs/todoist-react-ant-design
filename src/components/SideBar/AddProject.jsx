@@ -43,6 +43,7 @@ const AddProject = () => {
         name: values.name,
         color: selectedColor?.name || "",
         is_favorite: values.favorite,
+        user_id: 1,
       };
 
       const result = await dispatch(addNewProject(projectData));

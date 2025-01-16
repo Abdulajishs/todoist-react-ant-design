@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -17,18 +17,48 @@ import runes from "runes2";
 import { useNavigate } from "react-router-dom";
 import { updateExistingProject } from "../../store/projects-action";
 import { useDispatch } from "react-redux";
+import axios from "axios";
+import Spinner from "../Spinner";
 
 const { Option } = Select;
 
-const EditProject = ({ project, onChangeAction }) => {
-  // console.log(project.isFavorite);
+const EditProject = ({ projectId, openMoreAction, onChangeAction }) => {
+  // console.log(project.is_favorite);
+  const [project, setProject] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOkDisabled, setIsOkDisabled] = useState(true);
-  const [favorite, setFavorite] = useState(project.isFavorite);
+  const [favorite, setFavorite] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
   const [form] = Form.useForm();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    let fetchProject = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `http://localhost:8080/todolist/projects/${projectId}`
+        );
+        let fetchedProject = response.data;
+        setProject(fetchedProject);
+        setFavorite(fetchedProject.is_favorite === 1);
+        form.setFieldsValue({
+          name: fetchedProject.name,
+          color: fetchedProject.color,
+          favorite: fetchedProject.is_favorite === 1,
+          workspace: "My Projects",
+        });
+      } catch (error) {
+        console.error("Error getting project:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProject();
+  }, [projectId, form, openMoreAction]);
+
+  console.log(project);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -42,11 +72,12 @@ const EditProject = ({ project, onChangeAction }) => {
       const selectedColor = todoistColors.find(
         (color) => color.value === values.color
       );
-
+      console.log(values.favorite);
       const updatedData = {
+        ...project,
         name: values.name,
         color: selectedColor ? selectedColor.name : values.color,
-        isFavorite: values.favorite,
+        is_favorite: values.favorite,
       };
 
       const result = await dispatch(
@@ -114,66 +145,70 @@ const EditProject = ({ project, onChangeAction }) => {
           style: { backgroundColor: "#F5F5F5", color: "gray", border: "none" },
         }}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFieldsChange={handleFieldsChange}
-          initialValues={{
-            name: project.name,
-            color: project.color,
-            favorite: project.isFavorite,
-            workspace: "My Projects",
-          }}
-        >
-          <Form.Item label="Name" name="name" className="font-bold">
-            <Input
-              count={{
-                show: true,
-                max: 120,
-                strategy: (txt) => runes(txt).length,
-                exceedFormatter: (txt, { max }) =>
-                  runes(txt).slice(0, max).join(""),
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item label="Color" className="font-bold" name="color">
-            <Select placeholder="Select a color">
-              {todoistColors.map((color) => (
-                <Option key={color.value} value={color.value}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "12px",
-                      height: "12px",
-                      backgroundColor: color.value,
-                      marginRight: "8px",
-                      borderRadius: "50%",
-                    }}
-                  ></span>
-                  {color.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="Workspace" className="font-bold" name="workspace">
-            <Select>
-              <Option value="My Projects">My Projects</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="favorite" valuePropName="checked">
-            <label>
-              <Switch
-                size="small"
-                checked={favorite}
-                onChange={handleFavoriteToggle}
+        {loading ? (
+          <Spinner />
+        ) : (
+          <Form
+            form={form}
+            layout="vertical"
+            onFieldsChange={handleFieldsChange}
+            initialValues={{
+              name: project.name,
+              color: project.color,
+              favorite: project.is_favorite === 1,
+              workspace: "My Projects",
+            }}
+          >
+            <Form.Item label="Name" name="name" className="font-bold">
+              <Input
+                count={{
+                  show: true,
+                  max: 120,
+                  strategy: (txt) => runes(txt).length,
+                  exceedFormatter: (txt, { max }) =>
+                    runes(txt).slice(0, max).join(""),
+                }}
               />
-              Add to Favorites
-            </label>
-          </Form.Item>
-        </Form>
+            </Form.Item>
+
+            <Form.Item label="Color" className="font-bold" name="color">
+              <Select placeholder="Select a color">
+                {todoistColors.map((color) => (
+                  <Option key={color.value} value={color.value}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "12px",
+                        height: "12px",
+                        backgroundColor: color.value,
+                        marginRight: "8px",
+                        borderRadius: "50%",
+                      }}
+                    ></span>
+                    {color.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item label="Workspace" className="font-bold" name="workspace">
+              <Select>
+                <Option value="My Projects">My Projects</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="favorite" valuePropName="checked">
+              <label>
+                <Switch
+                  size="small"
+                  checked={favorite}
+                  onChange={handleFavoriteToggle}
+                />
+                Add to Favorites
+              </label>
+            </Form.Item>
+          </Form>
+        )}
         <Divider />
       </Modal>
     </>

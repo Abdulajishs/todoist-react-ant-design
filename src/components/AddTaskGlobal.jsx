@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Button, Divider, Form, Input, message, Modal, Select } from "antd";
+import {
+  Button,
+  DatePicker,
+  Divider,
+  Form,
+  Input,
+  message,
+  Modal,
+  Select,
+} from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { addNewTask } from "../store/tasks-action";
 
@@ -29,17 +38,17 @@ const AddTaskGlobal = ({ isModalOpen, onSetOpenModal }) => {
       const projectId = projectItem ? projectItem.projectId : null;
 
       const taskData = {
-        content: values.content,
-        description: values.description || "",
+        content: values.content.trim(),
+        description: values.description.trim(),
         project_id: projectId,
+        due_date: values.dueDate.format("YYYY-MM-DD"),
       };
 
       let newTask = await dispatch(addNewTask(taskData));
       if (newTask.success) {
-        console.log("Task added successfully:", newTask);
         message.success(`Task "${values.content}" created successfully.`);
       } else {
-        message.error("Failed to createTask. Please try again.");
+        message.error("Failed to create task. Please try again.");
       }
 
       form.resetFields();
@@ -50,9 +59,12 @@ const AddTaskGlobal = ({ isModalOpen, onSetOpenModal }) => {
     }
   };
 
-  const handleTitleChange = (e) => {
-    const title = e.target.value;
-    setIsAddDisabled(!title.trim().length);
+  const handleInputChange = () => {
+    const values = form.getFieldsValue();
+    const isContentFilled = values.content?.trim().length > 0;
+    const isDescriptionFilled = values.description?.trim().length > 0;
+
+    setIsAddDisabled(!(isContentFilled && isDescriptionFilled));
   };
 
   const handleCancel = () => {
@@ -84,7 +96,7 @@ const AddTaskGlobal = ({ isModalOpen, onSetOpenModal }) => {
           <Input
             size="middle"
             placeholder="Enter task title"
-            onChange={handleTitleChange}
+            onChange={handleInputChange}
           />
         </Form.Item>
         <Form.Item name="description" className="mb-0">
@@ -92,6 +104,7 @@ const AddTaskGlobal = ({ isModalOpen, onSetOpenModal }) => {
             placeholder="Enter task description"
             rows={1}
             autoSize={{ minRows: 1, maxRows: 5 }}
+            onChange={handleInputChange}
           />
         </Form.Item>
         <Divider className="my-3" />
@@ -101,6 +114,9 @@ const AddTaskGlobal = ({ isModalOpen, onSetOpenModal }) => {
             style={{ width: 200 }}
             options={listProjectName}
           />
+        </Form.Item>
+        <Form.Item name="dueDate">
+          <DatePicker placeholder="Select due date" />
         </Form.Item>
       </Form>
     </Modal>

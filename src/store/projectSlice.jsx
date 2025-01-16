@@ -12,11 +12,11 @@ const projectSlice = createSlice({
       state.projects = action.payload;
     },
     addProject: (state, action) => {
-      // console.log(action.payload);
+      console.log(action.payload);
       state.projects.push(action.payload);
     },
     updateProject: (state, action) => {
-      // console.log(state, action.payload, action.payload.id);
+      console.log(state, action.payload, action.payload.id);
       state.projects = state.projects.map((project) =>
         project.id === action.payload.id ? action.payload : project
       );

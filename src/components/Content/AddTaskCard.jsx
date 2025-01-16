@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Button,
   Card,
+  DatePicker,
   Divider,
   Flex,
   Form,
@@ -33,48 +34,45 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
     ),
     projectId: project.id,
   }));
-  // console.log(listProjectName);
 
   const [form] = Form.useForm();
 
+  const validateFields = () => {
+    const values = form.getFieldsValue();
+    const allFieldsFilled =
+      values.content?.trim() && values.description?.trim() && values.dueDate;
+    setIsAddDisabled(!allFieldsFilled);
+  };
+
   const handleFormSubmit = async (values) => {
     try {
-      console.log("Form Values:", values);
-
-      await form.validateFields();
-
       const projectItem = listProjectName.find(
         (p) => p.value === values.projectName
       );
 
       const projectId = projectItem ? projectItem.projectId : project.id;
 
-      let taskData = {
-        content: values.content,
-        description: values.description || "",
+      const taskData = {
+        content: values.content.trim(),
+        description: values.description.trim(),
         project_id: projectId,
+        due_date: values.dueDate.format("YYYY-MM-DD"),
+        is_completed: false,
       };
 
-      console.log(projectItem, taskData);
-      let newTask = await dispatch(addNewTask(taskData));
+      const newTask = await dispatch(addNewTask(taskData));
       if (newTask.success) {
-        console.log("Task added successfully:", newTask);
         message.success(`Task "${values.content}" created successfully.`);
       } else {
-        message.error("Failed to createTask. Please try again.");
+        message.error("Failed to create task. Please try again.");
       }
 
       form.resetFields();
       setIsAddDisabled(true);
+      onSetOpenCard(false);
     } catch (error) {
-      console.error("Validation Failed:", error);
-      message.error("Failed to createTask. Please try again.");
+      message.error("Failed to create task. Please try again.");
     }
-  };
-
-  const handleTitleChange = (e) => {
-    const title = e.target.value;
-    setIsAddDisabled(!title.trim().length > 0);
   };
 
   const handleCancel = () => {
@@ -83,38 +81,38 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
     onSetOpenCard(false);
   };
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
   return (
     <Card className="w-1/2">
-      <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFormSubmit}
+        onValuesChange={validateFields}
+      >
         <Form.Item name="content" className="mb-0">
           <Input
             size="middle"
             placeholder="Enter task title"
-            variant="borderless"
-            onChange={handleTitleChange}
+            onChange={validateFields}
           />
         </Form.Item>
         <Form.Item name="description" className="mb-0">
           <Input.TextArea
             placeholder="Enter task description"
-            variant="borderless"
             rows={1}
             autoSize={{ minRows: 1, maxRows: 5 }}
+            onChange={validateFields}
           />
+        </Form.Item>
+        <Form.Item name="dueDate">
+          <DatePicker placeholder="Select due date" onChange={validateFields} />
         </Form.Item>
         <Divider className="my-3" />
 
         <Flex justify="space-between">
           <Form.Item
             name="projectName"
-            // initialValue={{
-            //   label: project.name,
-            //   projectId: project.id,
-            //   value: project.name,
-            // }}
+            initialValue={project.name}
             className="mb-0"
           >
             <Select
@@ -122,7 +120,7 @@ const AddTaskCard = ({ project, onSetOpenCard }) => {
               style={{
                 width: 200,
               }}
-              onChange={handleChange}
+              onChange={validateFields}
               options={listProjectName}
             />
           </Form.Item>

@@ -19,35 +19,51 @@ import { EllipsisOutlined, PlusCircleFilled } from "@ant-design/icons";
 import ListCloseTask from "./ListCloseTask";
 import { useDispatch, useSelector } from "react-redux";
 import { updateExistingProject } from "../../store/projects-action";
+import { fetchTasks } from "../../store/tasks-action";
+import Spinner from "../Spinner";
 
 const SingleProjectContent = () => {
   const [openCard, setOpenCard] = useState(false);
   const [openMoreAction, setOpenMoreAction] = useState(false);
   const [editProjectName, setEditProjectName] = useState("");
   const { projects } = useSelector((state) => state.projects);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
   const { id } = useParams();
-  const project = projects.filter((project) => project.id === id)[0];
-  // console.log(project);
-
+  // console.log(typeof id);
+  const project = projects.filter((project) => project.id == id)[0];
+  // console.log(project, projects, project.id, id);
   const tasks = useSelector((state) => state.tasks.tasks);
-  const closedTasks = useSelector((state) => state.tasks.closedTasks);
+  const notCompletedTasks = tasks.filter((task) => task.is_completed == 0);
+  const completedTasks = tasks.filter((task) => task.is_completed == 1);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // console.log("check check");
     if (project) {
       setEditProjectName(project.name);
+      setLoading(true);
+      dispatch(fetchTasks(id))
+        .then(() => {
+          setLoading(false);
+        })
+        .catch((error) => {
+          setLoading(false);
+          message.error("Failed to fetch tasks");
+        });
     }
-  }, [project]);
+  }, [project, id]);
 
   useEffect(() => {
     if (editProjectName === project.name) return;
     const timeout = setTimeout(async () => {
       const result = await dispatch(
-        updateExistingProject(project.id, { name: editProjectName })
+        updateExistingProject(project.id, {
+          ...project,
+          name: editProjectName,
+          user_id: 1,
+        })
       );
       if (result.success) {
         message.success(`Project "${project.name}" created successfully.`);
@@ -62,104 +78,112 @@ const SingleProjectContent = () => {
   }, [editProjectName]);
 
   const handleMyProjectClick = () => navigate("/app/projects");
-  console.log(id, tasks, closedTasks);
+  // const selectedProjectTasks = tasks.filter((task) => task.projectId === id);
 
-  console.log(closedTasks);
-  const selectedProjectTasks = tasks.filter((task) => task.projectId === id);
-  const selectedProjectClosedTasks = closedTasks.filter(
-    (task) => task.projectId === id
-  );
-  console.log(selectedProjectClosedTasks);
   return (
     <>
-      {/* Header */}
-      <Flex justify="space-between" style={{ padding: "16px" }}>
-        <Button
-          type="text"
-          className="font-semibold text-gray-500"
-          onClick={handleMyProjectClick}
-        >
-          My projects /
-        </Button>
-
-        <Tooltip title="More actions">
-          <Button
-            type="text"
-            className="text-2xl"
-            onClick={() => setOpenMoreAction(true)}
-          >
-            <EllipsisOutlined />
-          </Button>
-        </Tooltip>
-      </Flex>
-
-      {/* Main Content */}
-      <div className="flex flex-col justify-center items-center">
-        {/* Project Name */}
-        <Space direction="vertical" className="w-[50%]">
-          <Typography.Title
-            editable={{
-              onChange: (value) => setEditProjectName(value),
-            }}
-            level={4}
-          >
-            {editProjectName}
-          </Typography.Title>
-
-          {/* Show  All Tasks of selected project.*/}
-          <div>
-            {selectedProjectTasks.map((task) => (
-              <ListTasks key={task.id} task={task} />
-            ))}
-          </div>
-
-          {/* Add Task Card */}
-          {!openCard && (
+      {loading ? (
+        <Spinner /> //while loading
+      ) : project ? (
+        <>
+          {/* Header */}
+          <Flex justify="space-between" style={{ padding: "16px" }}>
             <Button
               type="text"
-              block
-              className="flex justify-start items-center text-lg group"
-              onClick={() => setOpenCard(true)}
+              className="font-semibold text-gray-500"
+              onClick={handleMyProjectClick}
             >
-              <PlusCircleFilled className="hidden group-hover:inline text-red-500" />
-              <span className="pl-3 text-gray-500 group-hover:text-red-500 leading-6">
-                Add Task
-              </span>
+              My projects /
             </Button>
-          )}
-        </Space>
-        {openCard && (
-          <AddTaskCard project={project} onSetOpenCard={setOpenCard} />
-        )}
 
-        {/* ClosedTask */}
-        <div className="w-1/2">
-          {selectedProjectClosedTasks.map((task) => (
-            <ListCloseTask key={task.id} task={task} />
-          ))}
-        </div>
-      </div>
+            <Tooltip title="More actions">
+              <Button
+                type="text"
+                className="text-2xl"
+                onClick={() => setOpenMoreAction(true)}
+              >
+                <EllipsisOutlined />
+              </Button>
+            </Tooltip>
+          </Flex>
 
-      {/* Modal for More Actions for projects */}
-      <Modal
-        style={{
-          top: "40px",
-          left: "40%",
-        }}
-        open={openMoreAction}
-        onOk={() => setOpenMoreAction(false)}
-        onCancel={() => setOpenMoreAction(false)}
-        width={250}
-        footer={null}
-        closable={false}
-        mask={null}
-      >
-        <EditProject project={project} onChangeAction={setOpenMoreAction} />
-        <Divider style={{ margin: "8px 0" }} />
-        <AddToFavorite project={project} />
-        <Divider style={{ margin: "8px 0" }} />
-        <DeleteProject project={project} onChangeAction={setOpenMoreAction} />
-      </Modal>
+          {/* Main Content */}
+          <div className="flex flex-col justify-center items-center">
+            {/* Project Name */}
+            <Space direction="vertical" className="w-[50%]">
+              <Typography.Title
+                editable={{
+                  onChange: (value) => setEditProjectName(value),
+                }}
+                level={4}
+              >
+                {editProjectName}
+              </Typography.Title>
+
+              {/* Show  All Tasks of selected project.*/}
+              <div>
+                {notCompletedTasks.map((task) => (
+                  <ListTasks key={task.id} task={task} />
+                ))}
+              </div>
+
+              {/* Add Task Card */}
+              {!openCard && (
+                <Button
+                  type="text"
+                  block
+                  className="flex justify-start items-center text-lg group mb-5"
+                  onClick={() => setOpenCard(true)}
+                >
+                  <PlusCircleFilled className="hidden group-hover:inline text-red-500" />
+                  <span className="pl-3 text-gray-500 group-hover:text-red-500 leading-6">
+                    Add Task
+                  </span>
+                </Button>
+              )}
+            </Space>
+            {openCard && (
+              <AddTaskCard project={project} onSetOpenCard={setOpenCard} />
+            )}
+
+            {/* ClosedTask */}
+            <div className="w-1/2">
+              {completedTasks.map((task) => (
+                <ListCloseTask key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+
+          {/* Modal for More Actions for projects */}
+          <Modal
+            style={{
+              top: "40px",
+              left: "40%",
+            }}
+            open={openMoreAction}
+            onOk={() => setOpenMoreAction(false)}
+            onCancel={() => setOpenMoreAction(false)}
+            width={250}
+            footer={null}
+            closable={false}
+            mask={null}
+          >
+            <EditProject
+              projectId={project.id}
+              onChangeAction={setOpenMoreAction}
+            />
+            <Divider style={{ margin: "8px 0" }} />
+            <AddToFavorite project={project} />
+            <Divider style={{ margin: "8px 0" }} />
+            <DeleteProject
+              project={project}
+              onChangeAction={setOpenMoreAction}
+            />
+          </Modal>
+        </>
+      ) : (
+        <Spinner /> //fallback
+      )}
     </>
   );
 };

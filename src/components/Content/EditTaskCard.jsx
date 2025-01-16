@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Button,
   Card,
+  DatePicker,
   Divider,
   Flex,
   Form,
@@ -9,11 +10,12 @@ import {
   message,
   Select,
 } from "antd";
+import dayjs from "dayjs";
+
 import { useDispatch, useSelector } from "react-redux";
 import { updateExistingTask } from "../../store/tasks-action";
 
 const EditTaskCard = ({ task, onSetTaskCard }) => {
-  const [isAddDisabled, setIsAddDisabled] = useState(true);
   const { projects } = useSelector((state) => state.projects);
   const dispatch = useDispatch();
 
@@ -33,9 +35,8 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
     ),
     projectId: project.id,
   }));
-  // console.log(listProjectName);
-
-  const selectedProject = projects.find((p) => p.id === task.projectId);
+  console.log(task);
+  const selectedProject = projects.find((p) => p.id === task.project_id);
   console.log(selectedProject);
 
   const [form] = Form.useForm();
@@ -55,9 +56,10 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
         : selectedProject.id;
 
       let taskData = {
+        ...task,
         content: values.content,
         description: values.description || "",
-        projectId: projectId,
+        due_date: values.dueDate,
       };
 
       console.log(projectItem, taskData);
@@ -71,21 +73,14 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
       }
       form.resetFields();
       onSetTaskCard(false);
-      setIsAddDisabled(true);
     } catch (error) {
       console.error("Validation Failed:", error);
       message.error("Failed to updateTask. Please try again.");
     }
   };
 
-  const handleTitleChange = (e) => {
-    const title = e.target.value;
-    setIsAddDisabled(!title.trim().length > 0);
-  };
-
   const handleCancel = () => {
     form.resetFields();
-    setIsAddDisabled(true);
     onSetTaskCard(false);
   };
 
@@ -101,7 +96,8 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
         initialValues={{
           content: task.content,
           description: task.description,
-          project_id: task.project_id,
+          projectName: selectedProject.name,
+          dueDate: task.due_date ? dayjs(task.due_date) : null,
         }}
       >
         <Form.Item name="content" className="mb-0">
@@ -109,7 +105,6 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
             size="middle"
             placeholder="Enter task title"
             variant="borderless"
-            onChange={handleTitleChange}
           />
         </Form.Item>
         <Form.Item name="description" className="mb-0">
@@ -120,18 +115,13 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
             autoSize={{ minRows: 1, maxRows: 5 }}
           />
         </Form.Item>
+        <Form.Item name="dueDate">
+          <DatePicker placeholder="Select due date" />
+        </Form.Item>
         <Divider className="my-3" />
 
         <Flex justify="space-between">
-          <Form.Item
-            name="projectName"
-            // initialValue={{
-            //   label: selectedProject.name,
-            //   projectId: selectedProject.id,
-            //   value: selectedProject.name,
-            // }}
-            className="mb-0"
-          >
+          <Form.Item name="projectName" className="mb-0">
             <Select
               defaultValue={selectedProject.name}
               style={{
@@ -153,10 +143,7 @@ const EditTaskCard = ({ task, onSetTaskCard }) => {
             <Button
               type="danger"
               htmlType="submit"
-              className={`${
-                isAddDisabled ? "bg-[#EDA59E]" : "bg-[#DC4C3E]"
-              } text-white`}
-              disabled={isAddDisabled}
+              className={`bg-[#DC4C3E] text-white`}
             >
               Save
             </Button>

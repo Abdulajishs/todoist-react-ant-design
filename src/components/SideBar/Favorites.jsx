@@ -8,7 +8,10 @@ const Favorites = () => {
   const { projects } = useSelector((state) => state.projects);
   const [toggle, setToggle] = useState(false);
 
-  const favorites = projects.filter((project) => project.isFavorite);
+  const favorites = projects.filter(
+    (project) => project.is_favorite === 1 || project.is_favorite === true
+  );
+  console.log(favorites);
 
   return (
     <div>

@@ -5,14 +5,13 @@ import {
   deleteProject,
 } from "./projectSlice";
 
-import { TodoistApi } from "@doist/todoist-api-typescript";
-const token = import.meta.env.VITE_TOKEN;
-const api = new TodoistApi(token);
+import axios from "axios";
 
 export const fetchProjects = () => async (dispatch) => {
   try {
-    const projects = await api.getProjects();
-    dispatch(setProject(projects));
+    const projects = await axios.get("http://localhost:8080/todolist/projects");
+    dispatch(setProject(projects.data.slice(0, 10)));
+    console.log(projects.data.slice(0, 10));
   } catch (error) {
     console.error("Error to fetch projects:", error);
   }
@@ -20,9 +19,15 @@ export const fetchProjects = () => async (dispatch) => {
 
 export const addNewProject = (newProjectData) => async (dispatch) => {
   try {
-    const data = await api.addProject(newProjectData);
-    dispatch(addProject(data));
-    return { success: true, data };
+    console.log(newProjectData);
+    const response = await axios.post(
+      "http://localhost:8080/todolist/projects/",
+      newProjectData
+    );
+    console.log(response);
+    let newProject = response.data;
+    dispatch(addProject(newProject));
+    return { success: true, data: newProject };
   } catch (error) {
     console.error("Error adding project:", error);
     return { success: false, error };
@@ -32,9 +37,13 @@ export const addNewProject = (newProjectData) => async (dispatch) => {
 export const updateExistingProject =
   (projectId, updatedData) => async (dispatch) => {
     try {
-      const data = await api.updateProject(projectId, updatedData);
-      dispatch(updateProject(data));
-      return { success: true, data };
+      const response = await axios.put(
+        `http://localhost:8080/todolist/projects/${projectId}`,
+        updatedData
+      );
+      console.log(response);
+      dispatch(updateProject(updatedData));
+      return { success: true, data: response.data };
     } catch (error) {
       console.error("Error updating project:", error);
       return { success: false, error };
@@ -43,9 +52,11 @@ export const updateExistingProject =
 
 export const deleteExistingProject = (projectId) => async (dispatch) => {
   try {
-    const data = await api.deleteProject(projectId);
+    const response = await axios.delete(
+      `http://localhost:8080/todolist/projects/${projectId}`
+    );
     dispatch(deleteProject(projectId));
-    return { success: true, data };
+    return { success: true, data: response.data };
   } catch (error) {
     return { success: false, error };
   }

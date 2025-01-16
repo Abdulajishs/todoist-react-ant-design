@@ -1,4 +1,8 @@
-import { EditOutlined, EllipsisOutlined } from "@ant-design/icons";
+import {
+  CalendarOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+} from "@ant-design/icons";
 import { Button, Checkbox, Divider, Flex, message, Modal, Tooltip } from "antd";
 import React, { useState } from "react";
 import EditTask from "./EditTask";
@@ -6,7 +10,7 @@ import MoveTask from "./MoveTask";
 import DeleteTask from "./DeleteTask";
 import EditTaskCard from "./EditTaskCard";
 import { useDispatch } from "react-redux";
-import { addClosedTask } from "../../store/tasks-action";
+import { updateExistingTask } from "../../store/tasks-action";
 
 const ListTasks = ({ task }) => {
   const [openMoreAction, setOpenMoreAction] = useState(false);
@@ -23,7 +27,9 @@ const ListTasks = ({ task }) => {
     console.log(`checked = ${e.target.checked}`);
     try {
       if (e.target.checked) {
-        let data = await dispatch(addClosedTask(task.id, task));
+        let data = await dispatch(
+          updateExistingTask(task.id, { ...task, is_completed: 1 })
+        );
         if (data.success) {
           console.log("Updated the Task status successfully", data);
           message.success(
@@ -45,10 +51,17 @@ const ListTasks = ({ task }) => {
         <Flex justify="space-between">
           <Flex vertical>
             <Flex>
-              <Checkbox onChange={handleCheckedClick}></Checkbox>
+              <Checkbox
+                checked={task.is_completed}
+                onChange={handleCheckedClick}
+              ></Checkbox>
               <p className="pl-3 mb-0">{task.content}</p>
             </Flex>
             <p className="pl-7">{task.description}</p>
+            <p className="pl-7">
+              <CalendarOutlined className="pr-2" />
+              {task.due_date.slice(0, 10)}
+            </p>
           </Flex>
           <Flex
             align="center"
